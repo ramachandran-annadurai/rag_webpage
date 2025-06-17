@@ -10,3 +10,4 @@ qdrant-client
 requests
 tqdm
 python-dotenv
+openai
