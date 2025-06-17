@@ -206,9 +206,9 @@ import re
 import os
 import xgboost as xgb
 
-from rag_module import initialize_system, rag_query
+# from rag_module import initialize_system, rag_query
 from fastapi.responses import JSONResponse
-# from rag_chat import initialize_system, rag_query
+from rag_chat import initialize_system, rag_query
 
 # Initialize FastAPI
 app = FastAPI(title="Pregnancy Risk Prediction API with RAG", version="1.0.0")
@@ -361,15 +361,15 @@ def combined_predict(input_data: PredictionInput):
         ml_label, confidence, prob_dict = classify_risk(input_dict)
         ml_clean = ml_label.lower().strip().replace("_", " ")
 
-        rag_raw = rag_query(rag_model, rag_client, str(input_dict))
-        rag_clean = rag_raw.lower().strip().replace("_", " ")
-        # rag_result = rag_query(rag_model, rag_client, str(input_dict))
+        # rag_raw = rag_query(rag_model, rag_client, str(input_dict))
+        # rag_clean = rag_raw.lower().strip().replace("_", " ")
+        rag_result = rag_query(rag_model, rag_client, str(input_dict))
 
-        # # Extract <think> explanation and one-word risk
-        # reasoning_match = re.search(r"<think>(.*?)</think>", rag_result, re.DOTALL)
-        # rag_explanation = reasoning_match.group(1).strip() if reasoning_match else ""
-        # rag_label = rag_result.split("</think>")[-1].strip().split()[0] if "</think>" in rag_result else rag_result.strip()
-        # rag_clean = rag_label.lower().strip().replace("_", " ")
+        # Extract <think> explanation and one-word risk
+        reasoning_match = re.search(r"<think>(.*?)</think>", rag_result, re.DOTALL)
+        rag_explanation = reasoning_match.group(1).strip() if reasoning_match else ""
+        rag_label = rag_result.split("</think>")[-1].strip().split()[0] if "</think>" in rag_result else rag_result.strip()
+        rag_clean = rag_label.lower().strip().replace("_", " ")
 
         ml_score = output_mapping.get(ml_clean, 1)
         rag_score = output_mapping.get(rag_clean, 1)
@@ -378,8 +378,8 @@ def combined_predict(input_data: PredictionInput):
 
         # Return only required fields, exclude unset/null ones
         response = PredictionOutput(
-            # rag_risk=rag_label,
-            rag_risk=rag_raw,
+            rag_risk=rag_label,
+            # rag_risk=rag_raw,
             combined_risk=combined_risk,
             confidence=confidence
         )
